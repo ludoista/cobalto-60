@@ -98,7 +98,7 @@ btnLogout.onclick = async () => {
 async function buscarEventos() {
   const { data, error } = await supabaseClient
     .from('eventos')
-    .select('id, titulo, data, tipo, horario, autor_nome');
+    .select('id, titulo, data, tipo, horario, autor_nome, lugar');
 
   if (error) {
     console.error('Erro ao buscar do banco:', error);
@@ -121,6 +121,7 @@ async function buscarEventos() {
         data: evento.data,
         horario: evento.horario,
         autor_nome: evento.autor_nome,
+        lugar: evento.lugar,
       },
     };
   });
@@ -242,6 +243,7 @@ document.getElementById('form-novo-evento').addEventListener('submit', async (e)
   const tipoSelecionado = document.getElementById('evento-tipo').value;
   const dataDigitada = document.getElementById('evento-data').value;
   const horarioDigitado = document.getElementById('evento-horario').value;
+  const lugarDigitado = document.getElementById('evento-lugar').value;
 
   const btnSubmit = e.target.querySelector('button[type="submit"]');
   btnSubmit.innerText = "Salvando...";
@@ -259,6 +261,7 @@ document.getElementById('form-novo-evento').addEventListener('submit', async (e)
       tipo: tipoSelecionado,
       data: dataDigitada,
       horario: horarioDigitado || null,
+      lugar: lugarDigitado || null,
       autor_nome: apelido,
     }]);
 
@@ -280,7 +283,7 @@ const acoesDono = document.getElementById('detalhes-acoes-dono');
 
 function abrirModalDetalhes(evento) {
   eventoSelecionadoId = evento.id;
-  const { tipo, horario, autor_nome } = evento.extendedProps;
+  const { tipo, horario, autor_nome, lugar } = evento.extendedProps;
 
   document.getElementById('detalhes-titulo').innerText = evento.title;
   document.getElementById('detalhes-tipo').innerText = tipo.charAt(0).toUpperCase() + tipo.slice(1);
@@ -293,6 +296,14 @@ function abrirModalDetalhes(evento) {
     document.getElementById('detalhes-horario').innerText = horario.substring(0, 5);
   } else {
     linhaHorario.style.display = 'none';
+  }
+
+  const linhaLugar = document.getElementById('detalhes-lugar-linha');
+  if (lugar) {
+    linhaLugar.style.display = 'block';
+    document.getElementById('detalhes-lugar').innerText = lugar;
+  } else {
+    linhaLugar.style.display = 'none';
   }
 
   acoesDono.style.display = usuarioAtualId ? 'flex' : 'none';
@@ -310,12 +321,13 @@ document.getElementById('btn-fechar-detalhes').onclick = () => {
 // --- Entrar em modo de edição ---
 document.getElementById('btn-editar-evento').onclick = () => {
   const evento = calendar.getEventById(eventoSelecionadoId);
-  const { tipo, data, horario } = evento.extendedProps;
+  const { tipo, data, horario, lugar } = evento.extendedProps;
 
   document.getElementById('editar-titulo').value = evento.title;
   document.getElementById('editar-tipo').value = tipo;
   document.getElementById('editar-data').value = data;
   document.getElementById('editar-horario').value = horario ? horario.substring(0, 5) : '';
+  document.getElementById('editar-lugar').value = lugar || '';
 
   painelVisualizacao.style.display = 'none';
   formEdicao.style.display = 'block';
@@ -344,6 +356,7 @@ formEdicao.addEventListener('submit', async (e) => {
       tipo: document.getElementById('editar-tipo').value,
       data: document.getElementById('editar-data').value,
       horario: document.getElementById('editar-horario').value || null,
+      lugar: document.getElementById('editar-lugar').value || null,
       autor_nome: apelido, // sobrescreve com quem editou por último
     })
     .eq('id', eventoSelecionadoId);
