@@ -102,6 +102,7 @@ async function buscarEventos() {
 
   if (error) {
     console.error('Erro ao buscar do banco:', error);
+    alert('Não foi possível carregar os eventos. Veja o console para detalhes técnicos.');
     return [];
   }
 
@@ -141,43 +142,32 @@ document.addEventListener('DOMContentLoaded', async () => {
     moreLinkClick: 'popover',
     events: todosEventos,
 
+    // Adiciona o botão de troca entre Mês e Ano na barra superior
+    headerToolbar: {
+      left: 'prev,next today',
+      center: 'title',
+      right: 'dayGridMonth,multiMonthYear', // <- botões de view
+    },
+
+    // Configuração específica da view anual
+    views: {
+      multiMonthYear: {
+        multiMonthMaxColumns: 3, // 3 meses por linha (ajustável: 2, 3 ou 4)
+      },
+    },
+
     eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
 
-    // Conteúdo customizado: ícone + horário + título truncado + badge "Seu"
-    eventContent: (arg) => {
-      const { tipo, horario, autor_nome } = arg.event.extendedProps;
+    eventContent: (arg) => { /* ... o bloco que você já colou acima ... */ },
 
-      const wrapper = document.createElement('div');
-      wrapper.classList.add('evento-conteudo');
-
-      const spanIcone = document.createElement('span');
-      spanIcone.classList.add('evento-icone');
-      spanIcone.innerText = ICONES_EVENTO[tipo] || ICONE_PADRAO;
-      wrapper.appendChild(spanIcone);
-
-      if (horario) {
-        const spanHora = document.createElement('span');
-        spanHora.classList.add('evento-horario');
-        spanHora.innerText = horario.substring(0, 5);
-        wrapper.appendChild(spanHora);
-      }
-
-      const spanTitulo = document.createElement('span');
-      spanTitulo.classList.add('evento-titulo');
-      spanTitulo.innerText = arg.event.title;
-      wrapper.appendChild(spanTitulo);
-
-      // Badge agora mostra o apelido de QUEM CRIOU (visível pra todos,
-      // não só pro próprio autor — reforça a natureza colaborativa)
-      if (autor_nome) {
-        const badge = document.createElement('span');
-        badge.classList.add('evento-badge-dono');
-        badge.innerText = autor_nome;
-        wrapper.appendChild(badge);
-      }
-
-      return { domNodes: [wrapper] };
+    eventDidMount: (info) => {
+      const cor = info.event.backgroundColor || COR_PADRAO;
+      info.el.style.backgroundColor = cor;
+      info.el.style.borderColor = cor;
     },
+
+    eventClick: (info) => abrirModalDetalhes(info.event),
+  });
 
     // --------------------------------------------------------
     // CORREÇÃO DO BUG DE CORES: forçamos a cor diretamente no

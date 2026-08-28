@@ -264,40 +264,56 @@ h1 {
 
 /* =========================================
  *  EVENTOS DENTRO DO CALENDÁRIO
- *  (corrige texto cortado/mal formatado)
+ *  Hierarquia: ícone (fixo, pequeno) > título (domina o espaço) > horário (discreto)
  *  ========================================= */
 .fc-event {
     cursor: pointer;
     border: none !important;
-    padding: 2px 4px;
+    padding: 3px 6px;
     border-radius: 4px;
 }
 
-/* Conteúdo customizado do evento (ver eventContent no app.js) */
 .evento-conteudo {
     display: flex;
     align-items: center;
-    gap: 4px;
-    overflow: hidden;      /* impede que o texto vaze da caixinha */
-    white-space: nowrap;
+    gap: 5px;
+    overflow: hidden;
     width: 100%;
 }
 
-.evento-conteudo .evento-horario {
-    font-weight: 700;
-    flex-shrink: 0; /* a hora nunca é cortada, só o título */
+.evento-icone {
+    flex-shrink: 0;
+    font-size: 11px;
+    opacity: 0.9;
 }
 
-.evento-conteudo .evento-titulo {
+.evento-titulo {
+    flex: 1 1 auto;      /* cresce e ocupa o espaço sobrando — é a prioridade visual */
+    min-width: 0;        /* necessário pra o ellipsis funcionar dentro de flexbox */
     overflow: hidden;
-    text-overflow: ellipsis; /* "Prova de Cálculo Num..." em vez de cortar bruscamente */
+    text-overflow: ellipsis;
     white-space: nowrap;
+    font-weight: 600;    /* mais peso visual que o horário */
+    font-size: 13px;
 }
 
-.fc-daygrid-day:hover {
-    background-color: #f1f5f9;
-    cursor: pointer;
-    transition: background-color 0.2s;
+.evento-horario {
+    flex-shrink: 0;      /* nunca é espremido — some o título antes dele, não o contrário */
+    font-size: 11px;
+    font-weight: 400;
+    opacity: 0.85;
+}
+
+/* =========================================
+ *  YEAR VIEW (multiMonthYear)
+ *  ========================================= */
+.fc-multimonth-title {
+    font-weight: 700;
+    color: var(--cobalto);
+}
+
+.fc-multimonth {
+    gap: 20px; /* espaço entre os mini-meses */
 }
 
 /* =========================================
