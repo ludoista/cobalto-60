@@ -30,22 +30,28 @@
 
     <!-- FILTROS: checkboxes multi-seleção (não excludentes).
          Cada checkbox tem data-tipo, lido pelo JS. -->
-    <section class="filtros-container">
-      <label class="filtro-pill">
-        <input type="checkbox" class="chk-filtro" data-tipo="prova" checked>
-        <span class="dot" style="background-color:#ef4444"></span> Provas
-      </label>
-      <label class="filtro-pill">
-        <input type="checkbox" class="chk-filtro" data-tipo="trabalho" checked>
-        <span class="dot" style="background-color:#2563eb"></span> Trabalhos
-      </label>
-      <label class="filtro-pill">
-        <input type="checkbox" class="chk-filtro" data-tipo="feriado" checked>
-        <span class="dot" style="background-color:#10b981"></span> Feriados
-      </label>
-    </section>
+         <section class="filtros-container">
+           <input type="text" id="busca-evento" class="input-busca" placeholder="🔎 Buscar por título...">
 
-    <div id="calendar"></div>
+           <label class="filtro-pill">
+             <input type="checkbox" class="chk-filtro" data-tipo="prova" checked>
+             <span class="dot" style="background-color:#ef4444"></span> Provas
+           </label>
+           <label class="filtro-pill">
+             <input type="checkbox" class="chk-filtro" data-tipo="trabalho" checked>
+             <span class="dot" style="background-color:#2563eb"></span> Trabalhos
+           </label>
+           <label class="filtro-pill">
+             <input type="checkbox" class="chk-filtro" data-tipo="feriado" checked>
+             <span class="dot" style="background-color:#10b981"></span> Feriados
+           </label>
+           <label class="filtro-pill">
+             <input type="checkbox" class="chk-filtro" data-tipo="evento" checked>
+             <span class="dot" style="background-color:#8b5cf6"></span> Eventos
+           </label>
+         </section>
+
+         <div id="calendar"></div>
 
   </main>
 
@@ -66,6 +72,7 @@
             <option value="prova">Prova</option>
             <option value="trabalho">Trabalho</option>
             <option value="feriado">Feriado</option>
+            <option value="evento">Evento</option>
           </select>
         </div>
 
@@ -109,15 +116,54 @@
        Aberto ao clicar num evento no calendário. Somente leitura
        por enquanto — edição/exclusão fica pra uma próxima etapa.
        ========================================================== -->
-  <div id="modal-detalhes" class="modal">
-    <div class="modal-conteudo">
-      <span class="fechar-modal" id="btn-fechar-detalhes">&times;</span>
-      <h2 id="detalhes-titulo"></h2>
-      <p><strong>Tipo:</strong> <span id="detalhes-tipo"></span></p>
-      <p><strong>Data:</strong> <span id="detalhes-data"></span></p>
-      <p id="detalhes-horario-linha"><strong>Horário:</strong> <span id="detalhes-horario"></span></p>
-    </div>
-  </div>
+       <div id="modal-detalhes" class="modal">
+         <div class="modal-conteudo">
+           <span class="fechar-modal" id="btn-fechar-detalhes">&times;</span>
+
+           <!-- MODO VISUALIZAÇÃO -->
+           <div id="detalhes-visualizacao">
+             <h2 id="detalhes-titulo"></h2>
+             <p><strong>Tipo:</strong> <span id="detalhes-tipo"></span></p>
+             <p><strong>Data:</strong> <span id="detalhes-data"></span></p>
+             <p id="detalhes-horario-linha"><strong>Horário:</strong> <span id="detalhes-horario"></span></p>
+
+             <!-- Só aparece se o usuário logado for o autor do evento -->
+             <div id="detalhes-acoes-dono" class="acoes-dono" style="display:none;">
+               <button type="button" id="btn-editar-evento" class="btn-primario">Editar</button>
+               <button type="button" id="btn-excluir-evento" class="btn-primario btn-perigo">Excluir</button>
+             </div>
+           </div>
+
+           <!-- MODO EDIÇÃO -->
+           <form id="form-editar-evento" style="display:none;">
+             <div class="form-grupo">
+               <label for="editar-titulo">Título</label>
+               <input type="text" id="editar-titulo" required>
+             </div>
+             <div class="form-grupo">
+               <label for="editar-tipo">Tipo</label>
+               <select id="editar-tipo" required>
+                 <option value="prova">Prova</option>
+                 <option value="trabalho">Trabalho</option>
+                 <option value="feriado">Feriado</option>
+                 <option value="evento">Evento</option>
+               </select>
+             </div>
+             <div class="form-grupo">
+               <label for="editar-data">Data</label>
+               <input type="date" id="editar-data" required>
+             </div>
+             <div class="form-grupo">
+               <label for="editar-horario">Horário (opcional)</label>
+               <input type="time" id="editar-horario">
+             </div>
+             <div class="acoes-edicao">
+               <button type="submit" class="btn-primario">Salvar Alterações</button>
+               <button type="button" id="btn-cancelar-edicao" class="btn-primario btn-secundario">Cancelar</button>
+             </div>
+           </form>
+         </div>
+       </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>

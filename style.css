@@ -246,29 +246,21 @@ h1 {
 }
 
 /* =========================================
- *  LEGENDA DE CORES
+ *  BUSCA
  *  ========================================= */
-.legenda-container {
-    display: flex;
-    gap: 20px;
-    flex-wrap: wrap;
-    font-size: 13px;
-    color: #64748b;
+.input-busca {
+    flex: 1 1 200px; /* cresce, mas não menos que 200px — fica ao lado dos filtros */
+    padding: 8px 14px;
+    border: 1px solid var(--borda);
+    border-radius: 999px;
+    font-size: 14px;
+    outline: none;
 }
 
-.legenda-item {
-    display: flex;
-    align-items: center;
-    gap: 6px;
+.input-busca:focus {
+    border-color: var(--cobalto);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
-
-.legenda-item .dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-}
-
 
 /* =========================================
  *  EVENTOS DENTRO DO CALENDÁRIO
@@ -323,6 +315,73 @@ h1 {
 .form-grupo select:focus {
     border-color: var(--cobalto);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+/* =========================================
+ *  ÍCONES E BADGES NOS EVENTOS
+ *  ========================================= */
+.evento-conteudo {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;
+    white-space: nowrap;
+    width: 100%;
+}
+
+.evento-icone {
+    flex-shrink: 0;
+    font-size: 12px;
+}
+
+.evento-horario {
+    font-weight: 700;
+    flex-shrink: 0;
+}
+
+.evento-titulo {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.evento-badge-dono {
+    flex-shrink: 0;
+    font-size: 9px;
+    background: rgba(255,255,255,0.35);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* =========================================
+ *  AÇÕES DO MODAL DE DETALHES (dono do evento)
+ *  ========================================= */
+.acoes-dono, .acoes-edicao {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+.btn-perigo {
+    background-color: var(--perigo);
+}
+.btn-perigo:hover {
+    background-color: #b91c1c;
+}
+
+.btn-secundario {
+    background-color: #94a3b8;
+}
+.btn-secundario:hover {
+    background-color: #64748b;
+}
+
+.fc-daygrid-day:hover {
+    background-color: #f1f5f9;
+    cursor: pointer;
+    transition: background-color 0.2s;
 }
 
 /* =========================================

@@ -1,52 +1,51 @@
 // ================================================================
 //  COBALTO-60 — app.js
-//  Calendário acadêmico comunitário (UFPel)
-//
-//  Este arquivo é dividido em seções numeradas. Se você é um novo
-//  contribuidor: leia na ordem, cada seção assume que a anterior
-//  já rodou (ex: a seção 4 depende do cliente criado na seção 1).
 // ================================================================
 
 // ================================================================
 // 1. CLIENTE SUPABASE
-// ----------------------------------------------------------------
-// `supabaseClient` é a NOSSA conexão com o projeto (não confundir
-// com `window.supabase`, que é apenas a biblioteca/namespace global
-// injetada pelo <script> do CDN).
 // ================================================================
 const SUPABASE_URL = 'https://mwgbwaecjwsagpjuitto.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_Mq3dxeNkWorLhriiZsSM3A_NczYc06Q';
 const supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
 // ================================================================
-// 2. MAPA DE CORES POR TIPO DE EVENTO
+// 2. MAPAS DE APARÊNCIA POR TIPO DE EVENTO
 // ----------------------------------------------------------------
-// Fonte única de verdade para as cores. Se um novo "tipo" for
-// criado no banco (ex: 'plantão'), basta adicionar uma linha aqui
-// — nenhuma outra parte do código precisa mudar.
+// Fonte única de verdade. Adicionar um tipo novo = adicionar uma
+// linha em cada um destes dois objetos, nada mais.
 // ================================================================
 const CORES_EVENTO = {
-  prova: '#ef4444',    // vermelho — mesmo tom de --perigo no CSS
-  trabalho: '#2563eb', // azul — mesmo tom de --cobalto no CSS
-  feriado: '#10b981',  // verde — mesmo tom de --sucesso no CSS
+  prova: '#ef4444',
+  trabalho: '#2563eb',
+  feriado: '#10b981',
+  evento: '#8b5cf6',
 };
-const COR_PADRAO = '#64748b'; // cinza, usado se o tipo vier vazio/desconhecido
+const ICONES_EVENTO = {
+  prova: '📝',
+  trabalho: '📄',
+  feriado: '🎉',
+  evento: '📌',
+};
+const COR_PADRAO = '#64748b';
+const ICONE_PADRAO = '📌';
 
 // ================================================================
 // 3. REFERÊNCIAS DOS ELEMENTOS DA TELA
 // ================================================================
 const modalEvento = document.getElementById('modal-evento');
 const modalLogin = document.getElementById('modal-login');
+const modalDetalhes = document.getElementById('modal-detalhes');
 const btnNovoEvento = document.getElementById('btn-novo-evento');
 const btnLogin = document.getElementById('btn-login');
 const btnLogout = document.getElementById('btn-logout');
-const botoesFiltro = document.querySelectorAll('.btn-filtro');
+const checkboxesFiltro = document.querySelectorAll('.chk-filtro');
+const inputBusca = document.getElementById('busca-evento');
 
-// Estado em memória do calendário — preenchidos nas seções 5 e 6.
-// Guardar isso globalmente evita ter que reconsultar o Supabase
-// toda vez que o usuário clica num filtro.
 let calendar = null;
 let todosEventos = [];
+let usuarioAtualId = null;   // id do usuário logado (ou null se anônimo)
+let eventoSelecionadoId = null; // id do evento aberto no modal de detalhes
 
 // ================================================================
 // 4. AUTENTICAÇÃO (SESSÃO E BOTÕES)
@@ -55,12 +54,13 @@ async function verificarSessao() {
   const { data: { session } } = await supabaseClient.auth.getSession();
   const estaLogado = !!session;
 
+  usuarioAtualId = session?.user?.id || null;
+
   btnLogin.style.display = estaLogado ? 'none' : 'inline-block';
   btnLogout.style.display = estaLogado ? 'inline-block' : 'none';
   btnNovoEvento.style.display = estaLogado ? 'inline-block' : 'none';
 }
 
-// Reage automaticamente a login/logout (inclusive em outras abas)
 supabaseClient.auth.onAuthStateChange(() => verificarSessao());
 verificarSessao();
 
@@ -90,11 +90,15 @@ btnLogout.onclick = async () => {
 
 // ================================================================
 // 5. BUSCAR EVENTOS E TRADUZIR PARA O FORMATO DO FULLCALENDAR
+// ----------------------------------------------------------------
+// IMPORTANTE: agora selecionamos também 'id' e 'author_id' —
+// sem o 'id' não é possível editar/excluir um evento específico
+// depois, e sem 'author_id' não dá pra saber quem pode editar.
 // ================================================================
 async function buscarEventos() {
   const { data, error } = await supabaseClient
     .from('eventos')
-    .select('titulo, data, tipo, horario');
+    .select('id, titulo, data, tipo, horario, author_id');
 
   if (error) {
     console.error('Erro ao buscar do banco:', error);
@@ -107,12 +111,15 @@ async function buscarEventos() {
       : evento.data;
 
     return {
+      id: String(evento.id), // FullCalendar trabalha melhor com id em string
       title: evento.titulo,
       start: inicio,
       color: CORES_EVENTO[evento.tipo] || COR_PADRAO,
       extendedProps: {
         tipo: evento.tipo,
-        horario: evento.horario, // guardamos cru pra exibir no modal de detalhes
+        data: evento.data,       // guardado cru, útil pra pré-preencher o form de edição
+        horario: evento.horario,
+        author_id: evento.author_id,
       },
     };
   });
@@ -134,28 +141,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     moreLinkClick: 'popover',
     events: todosEventos,
 
-    // Formato da hora exibida (24h, sem "am/pm")
-    eventTimeFormat: {
-      hour: '2-digit',
-      minute: '2-digit',
-      hour12: false,
-    },
+    eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
 
-    // --------------------------------------------------------
-    // eventContent: substitui o HTML padrão do evento por um
-    // customizado, que trunca o título com "..." em vez de
-    // simplesmente deformar a caixinha ou cortar sem aviso.
-    // --------------------------------------------------------
+    // Conteúdo customizado: ícone + horário + título truncado + badge "Seu"
     eventContent: (arg) => {
-      const horario = arg.event.extendedProps.horario;
+      const { tipo, horario, author_id } = arg.event.extendedProps;
 
       const wrapper = document.createElement('div');
       wrapper.classList.add('evento-conteudo');
 
+      const spanIcone = document.createElement('span');
+      spanIcone.classList.add('evento-icone');
+      spanIcone.innerText = ICONES_EVENTO[tipo] || ICONE_PADRAO;
+      wrapper.appendChild(spanIcone);
+
       if (horario) {
         const spanHora = document.createElement('span');
         spanHora.classList.add('evento-horario');
-        spanHora.innerText = horario.substring(0, 5); // "14:30:00" -> "14:30"
+        spanHora.innerText = horario.substring(0, 5);
         wrapper.appendChild(spanHora);
       }
 
@@ -164,100 +167,62 @@ document.addEventListener('DOMContentLoaded', async () => {
       spanTitulo.innerText = arg.event.title;
       wrapper.appendChild(spanTitulo);
 
+      if (author_id && author_id === usuarioAtualId) {
+        const badge = document.createElement('span');
+        badge.classList.add('evento-badge-dono');
+        badge.innerText = 'Seu';
+        wrapper.appendChild(badge);
+      }
+
       return { domNodes: [wrapper] };
     },
 
     // --------------------------------------------------------
-    // eventClick: abre o modal de detalhes com os dados do
-    // evento clicado. Antes disso não existia handler nenhum,
-    // por isso o clique não fazia nada.
+    // CORREÇÃO DO BUG DE CORES: forçamos a cor diretamente no
+    // elemento renderizado (style inline), o que tem prioridade
+    // sobre qualquer CSS que estivesse "empatando" e fazendo só
+    // o último evento parecer colorido.
     // --------------------------------------------------------
-    eventClick: (info) => {
-      abrirModalDetalhes(info.event);
+    eventDidMount: (info) => {
+      const cor = info.event.backgroundColor || COR_PADRAO;
+      info.el.style.backgroundColor = cor;
+      info.el.style.borderColor = cor;
     },
+
+    eventClick: (info) => abrirModalDetalhes(info.event),
   });
 
   calendar.render();
-  renderizarLegenda();
 });
 
 // ================================================================
-// 6.5 MODAL DE DETALHES DO EVENTO
+// 7. FILTROS + BUSCA POR TEXTO (combinados)
 // ================================================================
-const modalDetalhes = document.getElementById('modal-detalhes');
-
-function abrirModalDetalhes(evento) {
-  const { tipo, horario } = evento.extendedProps;
-
-  document.getElementById('detalhes-titulo').innerText = evento.title;
-  document.getElementById('detalhes-tipo').innerText =
-    tipo.charAt(0).toUpperCase() + tipo.slice(1); // "prova" -> "Prova"
-  document.getElementById('detalhes-data').innerText =
-    evento.start.toLocaleDateString('pt-BR');
-
-  const linhaHorario = document.getElementById('detalhes-horario-linha');
-  if (horario) {
-    linhaHorario.style.display = 'block';
-    document.getElementById('detalhes-horario').innerText = horario.substring(0, 5);
-  } else {
-    linhaHorario.style.display = 'none';
-  }
-
-  modalDetalhes.style.display = 'block';
-}
-
-document.getElementById('btn-fechar-detalhes').onclick = () => {
-  modalDetalhes.style.display = 'none';
-};
-
-// ================================================================
-// 6.7 LEGENDA DE CORES
-// ----------------------------------------------------------------
-// Gerada dinamicamente a partir de CORES_EVENTO (seção 2), então
-// se um tipo novo for adicionado ali, a legenda se atualiza sozinha.
-// ================================================================
-function renderizarLegenda() {
-  const container = document.createElement('section');
-  container.classList.add('legenda-container');
-
-  const rotulos = { prova: 'Prova', trabalho: 'Trabalho', feriado: 'Feriado' };
-
-  Object.entries(CORES_EVENTO).forEach(([tipo, cor]) => {
-    const item = document.createElement('span');
-    item.classList.add('legenda-item');
-    item.innerHTML = `<span class="dot" style="background-color:${cor}"></span> ${rotulos[tipo] || tipo}`;
-    container.appendChild(item);
-  });
-
-  // Insere a legenda logo antes dos filtros
-  document.querySelector('.filtros-container').before(container);
-}
-
-// ================================================================
-// 7. FILTROS INTERATIVOS (multi-seleção via checkbox)
-// ----------------------------------------------------------------
-// Lê todos os checkboxes marcados no momento e filtra os eventos
-// que tenham `tipo` presente nessa lista. Se nenhum checkbox está
-// marcado, o calendário simplesmente fica vazio (comportamento
-// esperado, não é um bug).
-// ================================================================
-const checkboxesFiltro = document.querySelectorAll('.chk-filtro');
-
 function aplicarFiltros() {
   const tiposAtivos = Array.from(checkboxesFiltro)
     .filter(chk => chk.checked)
     .map(chk => chk.dataset.tipo);
 
-  const eventosFiltrados = todosEventos.filter(ev =>
-    tiposAtivos.includes(ev.extendedProps.tipo)
-  );
+  const termoBusca = inputBusca.value.trim().toLowerCase();
+
+  const eventosFiltrados = todosEventos.filter(ev => {
+    const tipoOk = tiposAtivos.includes(ev.extendedProps.tipo);
+    const buscaOk = !termoBusca || ev.title.toLowerCase().includes(termoBusca);
+    return tipoOk && buscaOk;
+  });
 
   calendar.removeAllEventSources();
   calendar.addEventSource(eventosFiltrados);
 }
 
-checkboxesFiltro.forEach(chk => {
-  chk.addEventListener('change', aplicarFiltros);
+checkboxesFiltro.forEach(chk => chk.addEventListener('change', aplicarFiltros));
+
+// Debounce simples: espera 300ms sem digitar antes de filtrar,
+// evita recalcular a cada tecla pressionada.
+let debounceBusca;
+inputBusca.addEventListener('input', () => {
+  clearTimeout(debounceBusca);
+  debounceBusca = setTimeout(aplicarFiltros, 300);
 });
 
 // ================================================================
@@ -272,20 +237,21 @@ document.getElementById('form-novo-evento').addEventListener('submit', async (e)
   const tituloDigitado = document.getElementById('evento-titulo').value;
   const tipoSelecionado = document.getElementById('evento-tipo').value;
   const dataDigitada = document.getElementById('evento-data').value;
-  const horarioDigitado = document.getElementById('evento-horario').value; // pode vir vazio
+  const horarioDigitado = document.getElementById('evento-horario').value;
 
   const btnSubmit = e.target.querySelector('button[type="submit"]');
   btnSubmit.innerText = "Salvando...";
   btnSubmit.disabled = true;
 
+  // Não precisamos enviar author_id manualmente — a coluna tem
+  // DEFAULT auth.uid(), o próprio Supabase preenche com base no
+  // usuário autenticado que está fazendo a requisição.
   const { error } = await supabaseClient
     .from('eventos')
     .insert([{
       titulo: tituloDigitado,
       tipo: tipoSelecionado,
       data: dataDigitada,
-      // Campo 'time' no Postgres aceita NULL — se o campo ficou
-      // vazio no form, mandamos null em vez de string vazia.
       horario: horarioDigitado || null,
     }]);
 
@@ -299,9 +265,115 @@ document.getElementById('form-novo-evento').addEventListener('submit', async (e)
 });
 
 // ================================================================
-// 9. UTILIDADES GERAIS
+// 9. MODAL DE DETALHES — VISUALIZAR, EDITAR E EXCLUIR
+// ================================================================
+const painelVisualizacao = document.getElementById('detalhes-visualizacao');
+const formEdicao = document.getElementById('form-editar-evento');
+const acoesDono = document.getElementById('detalhes-acoes-dono');
+
+function abrirModalDetalhes(evento) {
+  eventoSelecionadoId = evento.id;
+  const { tipo, horario, author_id } = evento.extendedProps;
+  const souODono = author_id && author_id === usuarioAtualId;
+
+  // Preenche o modo visualização
+  document.getElementById('detalhes-titulo').innerText = evento.title;
+  document.getElementById('detalhes-tipo').innerText = tipo.charAt(0).toUpperCase() + tipo.slice(1);
+  document.getElementById('detalhes-data').innerText = evento.start.toLocaleDateString('pt-BR');
+
+  const linhaHorario = document.getElementById('detalhes-horario-linha');
+  if (horario) {
+    linhaHorario.style.display = 'block';
+    document.getElementById('detalhes-horario').innerText = horario.substring(0, 5);
+  } else {
+    linhaHorario.style.display = 'none';
+  }
+
+  // Botões de Editar/Excluir só aparecem pro dono do evento
+  acoesDono.style.display = souODono ? 'flex' : 'none';
+
+  // Sempre abre no modo visualização, mesmo que já tenha editado antes
+  painelVisualizacao.style.display = 'block';
+  formEdicao.style.display = 'none';
+
+  modalDetalhes.style.display = 'block';
+}
+
+document.getElementById('btn-fechar-detalhes').onclick = () => {
+  modalDetalhes.style.display = 'none';
+};
+
+// --- Entrar em modo de edição ---
+document.getElementById('btn-editar-evento').onclick = () => {
+  const evento = calendar.getEventById(eventoSelecionadoId);
+  const { tipo, data, horario } = evento.extendedProps;
+
+  document.getElementById('editar-titulo').value = evento.title;
+  document.getElementById('editar-tipo').value = tipo;
+  document.getElementById('editar-data').value = data;
+  document.getElementById('editar-horario').value = horario ? horario.substring(0, 5) : '';
+
+  painelVisualizacao.style.display = 'none';
+  formEdicao.style.display = 'block';
+};
+
+document.getElementById('btn-cancelar-edicao').onclick = () => {
+  formEdicao.style.display = 'none';
+  painelVisualizacao.style.display = 'block';
+};
+
+// --- Salvar edição ---
+formEdicao.addEventListener('submit', async (e) => {
+  e.preventDefault();
+
+  const btnSalvar = e.target.querySelector('button[type="submit"]');
+  btnSalvar.innerText = "Salvando...";
+  btnSalvar.disabled = true;
+
+  const { error } = await supabaseClient
+    .from('eventos')
+    .update({
+      titulo: document.getElementById('editar-titulo').value,
+      tipo: document.getElementById('editar-tipo').value,
+      data: document.getElementById('editar-data').value,
+      horario: document.getElementById('editar-horario').value || null,
+    })
+    .eq('id', eventoSelecionadoId); // a RLS também garante que só o autor consegue
+
+  if (error) {
+    alert("Erro ao editar: " + error.message);
+    btnSalvar.innerText = "Salvar Alterações";
+    btnSalvar.disabled = false;
+  } else {
+    // Recarregamos a página pra garantir que o calendário reflita
+    // exatamente o estado atual do banco. Uma otimização futura
+    // seria atualizar o evento em memória sem reload.
+    window.location.reload();
+  }
+});
+
+// --- Excluir evento ---
+document.getElementById('btn-excluir-evento').onclick = async () => {
+  const confirmar = confirm("Tem certeza que deseja excluir este evento? Essa ação não pode ser desfeita.");
+  if (!confirmar) return;
+
+  const { error } = await supabaseClient
+    .from('eventos')
+    .delete()
+    .eq('id', eventoSelecionadoId);
+
+  if (error) {
+    alert("Erro ao excluir: " + error.message);
+  } else {
+    window.location.reload();
+  }
+};
+
+// ================================================================
+// 10. UTILIDADES GERAIS
 // ================================================================
 window.onclick = (event) => {
   if (event.target == modalEvento) modalEvento.style.display = 'none';
   if (event.target == modalLogin) modalLogin.style.display = 'none';
+  if (event.target == modalDetalhes) modalDetalhes.style.display = 'none';
 };
