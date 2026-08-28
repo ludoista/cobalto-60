@@ -82,7 +82,7 @@ h1 {
     margin: 20px 0;
     display: flex;
     justify-content: center;
-    gap: 15px; /* Espaço entre os botões */
+    gap: 15px;
 }
 
 .btn-primario {
@@ -99,20 +99,26 @@ h1 {
 
 .btn-primario:hover {
     background-color: var(--cobalto-escuro);
-    transform: translateY(-1px); /* Leve efeito de levantar ao passar o mouse */
+    transform: translateY(-1px);
 }
 
 .btn-primario:active {
     transform: translateY(1px);
 }
 
-/* Cores específicas baseadas no estilo inline que você usou */
+/* Cores específicas de cada botão de ação */
 #btn-login { background-color: var(--texto); }
 #btn-login:hover { background-color: #0f172a; }
 #btn-logout { background-color: var(--perigo); }
 #btn-logout:hover { background-color: #b91c1c; }
 #acao-cadastrar { background-color: var(--sucesso); }
 #acao-cadastrar:hover { background-color: #059669; }
+
+.btn-perigo { background-color: var(--perigo); }
+.btn-perigo:hover { background-color: #b91c1c; }
+
+.btn-secundario { background-color: #94a3b8; }
+.btn-secundario:hover { background-color: #64748b; }
 
 /* =========================================
  *  MODAL (JANELA SOBREPOSTA)
@@ -123,14 +129,14 @@ h1 {
     z-index: 1000;
     left: 0; top: 0;
     width: 100%; height: 100%;
-    background-color: rgba(15, 23, 42, 0.6); /* Fundo escurecido moderno */
-    backdrop-filter: blur(4px); /* Borra o fundo (funciona em navegadores modernos) */
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
     animation: fadeIn 0.2s ease-out;
 }
 
 .modal-conteudo {
     background-color: var(--superficie);
-    margin: 8vh auto; /* Usa viewport height para centralizar melhor */
+    margin: 8vh auto;
     padding: 30px;
     border-radius: var(--raio);
     width: 90%;
@@ -160,6 +166,15 @@ h1 {
 .fechar-modal:hover { color: var(--perigo); }
 
 /* =========================================
+ *  AÇÕES DO MODAL DE DETALHES (editar/excluir)
+ *  ========================================= */
+.acoes-dono, .acoes-edicao {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}
+
+/* =========================================
  *  FORMULÁRIOS
  *  ========================================= */
 .form-grupo {
@@ -175,24 +190,21 @@ h1 {
     color: var(--texto);
 }
 
-.form-grupo input {
+.form-grupo input,
+.form-grupo select {
     padding: 12px;
     border: 1px solid var(--borda);
     border-radius: var(--raio);
     font-size: 15px;
-    transition: all 0.2s;
     outline: none;
+    background-color: white;
+    transition: all 0.2s;
 }
 
-.form-grupo input:focus {
+.form-grupo input:focus,
+.form-grupo select:focus {
     border-color: var(--cobalto);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); /* Efeito de anel ao focar */
-}
-
-.fc-daygrid-day:hover {
-    background-color: #f1f5f9;
-    cursor: pointer;
-    transition: background-color 0.2s;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
 }
 
 /* =========================================
@@ -211,7 +223,7 @@ h1 {
     background-color: var(--superficie);
     border: 1px solid var(--borda);
     padding: 8px 16px;
-    border-radius: 999px; /* formato de "pill" */
+    border-radius: 999px;
     font-size: 14px;
     font-weight: 600;
     cursor: pointer;
@@ -231,7 +243,6 @@ h1 {
     height: 0;
 }
 
-/* Quando o checkbox está marcado, destaca visualmente o pill */
 .filtro-pill:has(input:checked) {
     background-color: #eff6ff;
     border-color: var(--cobalto);
@@ -249,7 +260,7 @@ h1 {
  *  BUSCA
  *  ========================================= */
 .input-busca {
-    flex: 1 1 200px; /* cresce, mas não menos que 200px — fica ao lado dos filtros */
+    flex: 1 1 200px;
     padding: 8px 14px;
     border: 1px solid var(--borda);
     border-radius: 999px;
@@ -264,7 +275,7 @@ h1 {
 
 /* =========================================
  *  EVENTOS DENTRO DO CALENDÁRIO
- *  Hierarquia: ícone (fixo, pequeno) > título (domina o espaço) > horário (discreto)
+ *  Hierarquia: ícone (fixo) > título (domina o espaço) > horário (discreto) > badge
  *  ========================================= */
 .fc-event {
     cursor: pointer;
@@ -293,7 +304,7 @@ h1 {
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
-    font-weight: 600;    /* mais peso visual que o horário */
+    font-weight: 600;
     font-size: 13px;
 }
 
@@ -304,100 +315,37 @@ h1 {
     opacity: 0.85;
 }
 
-/* =========================================
- *  YEAR VIEW (multiMonthYear)
- *  ========================================= */
-.fc-multimonth-title {
-    font-weight: 700;
-    color: var(--cobalto);
-}
-
-.fc-multimonth {
-    gap: 20px; /* espaço entre os mini-meses */
-}
-
-/* =========================================
- *  SELECT
- *  ========================================= */
-.form-grupo select {
-    padding: 12px;
-    border: 1px solid var(--borda);
-    border-radius: var(--raio);
-    font-size: 15px;
-    outline: none;
-    background-color: white;
-}
-
-.form-grupo select:focus {
-    border-color: var(--cobalto);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
-}
-
-/* =========================================
- *  ÍCONES E BADGES NOS EVENTOS
- *  ========================================= */
-.evento-conteudo {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    overflow: hidden;
-    white-space: nowrap;
-    width: 100%;
-}
-
-.evento-icone {
-    flex-shrink: 0;
-    font-size: 12px;
-}
-
-.evento-horario {
-    font-weight: 700;
-    flex-shrink: 0;
-}
-
-.evento-titulo {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
 .evento-badge-dono {
     flex-shrink: 0;
     font-size: 9px;
-    background: rgba(255,255,255,0.35);
+    background: rgba(255, 255, 255, 0.35);
     padding: 1px 5px;
     border-radius: 4px;
     font-weight: 700;
     text-transform: uppercase;
 }
 
-/* =========================================
- *  AÇÕES DO MODAL DE DETALHES (dono do evento)
- *  ========================================= */
-.acoes-dono, .acoes-edicao {
-    display: flex;
-    gap: 10px;
-    margin-top: 20px;
-}
-
-.btn-perigo {
-    background-color: var(--perigo);
-}
-.btn-perigo:hover {
-    background-color: #b91c1c;
-}
-
-.btn-secundario {
-    background-color: #94a3b8;
-}
-.btn-secundario:hover {
-    background-color: #64748b;
-}
-
 .fc-daygrid-day:hover {
     background-color: #f1f5f9;
     cursor: pointer;
     transition: background-color 0.2s;
+}
+
+/* =========================================
+ *  YEAR VIEW (multiMonthYear) — múltiplas colunas
+ *  ========================================= */
+.fc-multimonth-title {
+    font-weight: 700;
+    color: var(--cobalto);
+    font-size: 16px;
+}
+
+.fc-multimonth {
+    gap: 24px 40px; /* vertical entre linhas, horizontal entre colunas */
+}
+
+.fc-multimonth .evento-titulo {
+    font-size: 12px;
 }
 
 /* =========================================

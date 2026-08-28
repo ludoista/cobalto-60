@@ -146,34 +146,46 @@ document.addEventListener('DOMContentLoaded', async () => {
     headerToolbar: {
       left: 'prev,next today',
       center: 'title',
-      right: 'dayGridMonth,multiMonthYear', // <- botões de view
+      right: 'dayGridMonth,multiMonthYear',
     },
 
-    // Configuração específica da view anual
     views: {
       multiMonthYear: {
-        multiMonthMaxColumns: 3, // 3 meses por linha (ajustável: 2, 3 ou 4)
+        multiMonthMaxColumns: 2,
+        multiMonthMinWidth: 300, // reduz o mínimo por mês, permite 2 colunas em telas mais estreitas
       },
     },
 
     eventTimeFormat: { hour: '2-digit', minute: '2-digit', hour12: false },
 
-    eventContent: (arg) => { /* ... o bloco que você já colou acima ... */ },
+    eventContent: (arg) => {
+          const evento = arg.event;
+          const tipo = evento.extendedProps.tipo || 'evento';
+          const horario = evento.extendedProps.horario;
 
-    eventDidMount: (info) => {
-      const cor = info.event.backgroundColor || COR_PADRAO;
-      info.el.style.backgroundColor = cor;
-      info.el.style.borderColor = cor;
-    },
+          // 1. Pega o ícone (badge) correspondente ao tipo
+          const icone = ICONES_EVENTO[tipo] || ICONE_PADRAO;
 
-    eventClick: (info) => abrirModalDetalhes(info.event),
-  });
+          // 2. Formata o horário, se existir (corta os segundos)
+          const htmlHorario = horario
+            ? `<span style="font-weight: 700; margin-right: 5px;">${horario.substring(0,5)}</span>`
+            : '';
+
+          // 3. Monta o HTML interno do evento (Ícone + Horário + Título)
+          const html = `
+            <div style="display: flex; align-items: center; width: 100%; padding: 2px 4px; color: white; font-size: 0.85em; overflow: hidden; white-space: nowrap;">
+              <span style="margin-right: 5px; font-size: 1.1em;">${icone}</span>
+              ${htmlHorario}
+              <span style="text-overflow: ellipsis; overflow: hidden;">${evento.title}</span>
+            </div>
+          `;
+
+          return { html: html };
+        },
 
     // --------------------------------------------------------
     // CORREÇÃO DO BUG DE CORES: forçamos a cor diretamente no
-    // elemento renderizado (style inline), o que tem prioridade
-    // sobre qualquer CSS que estivesse "empatando" e fazendo só
-    // o último evento parecer colorido.
+    // elemento renderizado (style inline).
     // --------------------------------------------------------
     eventDidMount: (info) => {
       const cor = info.event.backgroundColor || COR_PADRAO;
@@ -182,10 +194,10 @@ document.addEventListener('DOMContentLoaded', async () => {
     },
 
     eventClick: (info) => abrirModalDetalhes(info.event),
-  });
+  }); // <-- O calendário é fechado UMA ÚNICA VEZ aqui.
 
   calendar.render();
-});
+}); // <-- O evento de carregar a página é fechado aqui.
 
 // ================================================================
 // 7. FILTROS + BUSCA POR TEXTO (combinados)
