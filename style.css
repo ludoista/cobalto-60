@@ -1,0 +1,339 @@
+/* =========================================
+ *  VARIÁVEIS DE COR E TEMA (Fácil de editar)
+ *  ========================================= */
+:root {
+    --cobalto: #2563eb;        /* Azul principal */
+    --cobalto-escuro: #1d4ed8; /* Azul para o hover */
+    --sucesso: #10b981;        /* Verde para cadastro */
+    --perigo: #ef4444;         /* Vermelho para sair */
+    --fundo: #f8fafc;          /* Cinza bem claro para o fundo */
+    --superficie: #ffffff;     /* Branco para os cards/modal */
+    --texto: #1e293b;          /* Cinza escuro para leitura agradável */
+    --borda: #e2e8f0;
+    --raio: 8px;               /* Arredondamento padrão */
+    --sombra: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
+
+/* =========================================
+ *  RESETS E GLOBAIS
+ *  ========================================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background-color: var(--fundo);
+    color: var(--texto);
+    line-height: 1.6;
+    padding-bottom: 40px;
+}
+
+h1 {
+    text-align: center;
+    margin-top: 30px;
+    font-size: 2rem;
+    color: var(--cobalto);
+}
+
+/* =========================================
+ *  LAYOUT GERAL — cabeçalho + container
+ *  ========================================= */
+.topo {
+    background-color: var(--superficie);
+    border-bottom: 1px solid var(--borda);
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.topo h1 {
+    margin: 0;
+    font-size: 1.5rem;
+    text-align: left;
+}
+
+.container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+#calendar {
+    background: var(--superficie);
+    padding: 24px;
+    border-radius: var(--raio);
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* =========================================
+ *  BOTÕES
+ *  ========================================= */
+.header-acoes {
+    text-align: center;
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    gap: 15px; /* Espaço entre os botões */
+}
+
+.btn-primario {
+    background-color: var(--cobalto);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: var(--raio);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-primario:hover {
+    background-color: var(--cobalto-escuro);
+    transform: translateY(-1px); /* Leve efeito de levantar ao passar o mouse */
+}
+
+.btn-primario:active {
+    transform: translateY(1px);
+}
+
+/* Cores específicas baseadas no estilo inline que você usou */
+#btn-login { background-color: var(--texto); }
+#btn-login:hover { background-color: #0f172a; }
+#btn-logout { background-color: var(--perigo); }
+#btn-logout:hover { background-color: #b91c1c; }
+#acao-cadastrar { background-color: var(--sucesso); }
+#acao-cadastrar:hover { background-color: #059669; }
+
+/* =========================================
+ *  MODAL (JANELA SOBREPOSTA)
+ *  ========================================= */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(15, 23, 42, 0.6); /* Fundo escurecido moderno */
+    backdrop-filter: blur(4px); /* Borra o fundo (funciona em navegadores modernos) */
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-conteudo {
+    background-color: var(--superficie);
+    margin: 8vh auto; /* Usa viewport height para centralizar melhor */
+    padding: 30px;
+    border-radius: var(--raio);
+    width: 90%;
+    max-width: 420px;
+    box-shadow: var(--sombra);
+    position: relative;
+    animation: slideUp 0.3s ease-out;
+}
+
+.modal-conteudo h2 {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: var(--texto);
+}
+
+.fechar-modal {
+    position: absolute;
+    right: 20px; top: 20px;
+    font-size: 28px;
+    line-height: 1;
+    font-weight: bold;
+    cursor: pointer;
+    color: #94a3b8;
+    transition: color 0.2s;
+}
+
+.fechar-modal:hover { color: var(--perigo); }
+
+/* =========================================
+ *  FORMULÁRIOS
+ *  ========================================= */
+.form-grupo {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-grupo label {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--texto);
+}
+
+.form-grupo input {
+    padding: 12px;
+    border: 1px solid var(--borda);
+    border-radius: var(--raio);
+    font-size: 15px;
+    transition: all 0.2s;
+    outline: none;
+}
+
+.form-grupo input:focus {
+    border-color: var(--cobalto);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2); /* Efeito de anel ao focar */
+}
+
+.fc-daygrid-day:hover {
+    background-color: #f1f5f9;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+/* =========================================
+ *  FILTROS — checkboxes estilizados como pills
+ *  ========================================= */
+.filtros-container {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+}
+
+.filtro-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background-color: var(--superficie);
+    border: 1px solid var(--borda);
+    padding: 8px 16px;
+    border-radius: 999px; /* formato de "pill" */
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    user-select: none;
+    transition: all 0.2s ease-in-out;
+}
+
+.filtro-pill:hover {
+    border-color: var(--cobalto);
+}
+
+/* Esconde o checkbox nativo, mas mantém acessível (não usar display:none) */
+.filtro-pill input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+/* Quando o checkbox está marcado, destaca visualmente o pill */
+.filtro-pill:has(input:checked) {
+    background-color: #eff6ff;
+    border-color: var(--cobalto);
+    color: var(--cobalto-escuro);
+}
+
+.filtro-pill .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+/* =========================================
+ *  LEGENDA DE CORES
+ *  ========================================= */
+.legenda-container {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.legenda-item {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.legenda-item .dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+
+/* =========================================
+ *  EVENTOS DENTRO DO CALENDÁRIO
+ *  (corrige texto cortado/mal formatado)
+ *  ========================================= */
+.fc-event {
+    cursor: pointer;
+    border: none !important;
+    padding: 2px 4px;
+    border-radius: 4px;
+}
+
+/* Conteúdo customizado do evento (ver eventContent no app.js) */
+.evento-conteudo {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    overflow: hidden;      /* impede que o texto vaze da caixinha */
+    white-space: nowrap;
+    width: 100%;
+}
+
+.evento-conteudo .evento-horario {
+    font-weight: 700;
+    flex-shrink: 0; /* a hora nunca é cortada, só o título */
+}
+
+.evento-conteudo .evento-titulo {
+    overflow: hidden;
+    text-overflow: ellipsis; /* "Prova de Cálculo Num..." em vez de cortar bruscamente */
+    white-space: nowrap;
+}
+
+.fc-daygrid-day:hover {
+    background-color: #f1f5f9;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+/* =========================================
+ *  SELECT
+ *  ========================================= */
+.form-grupo select {
+    padding: 12px;
+    border: 1px solid var(--borda);
+    border-radius: var(--raio);
+    font-size: 15px;
+    outline: none;
+    background-color: white;
+}
+
+.form-grupo select:focus {
+    border-color: var(--cobalto);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}
+
+/* =========================================
+ *  ANIMAÇÕES
+ *  ========================================= */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
