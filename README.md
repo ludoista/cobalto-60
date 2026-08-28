@@ -25,7 +25,7 @@ Um sistema CRUD para gerenciamento e visualização de datas importantes (provas
 Tabela principal: `eventos`
 *   `id` (uuid, primary key)
 *   `titulo` (text)
-*   `tipo` (text) - Valores aceitos: *prova, trabalho, feriado, evento*
+*   `tipo` (text) - Valores aceitos: *prova, trabalho, sem-aula, evento*
 *   `data` (date)
 *   `horario` (time, nullable)
 *   `lugar` (text, nullable)
