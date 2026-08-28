@@ -98,7 +98,7 @@ btnLogout.onclick = async () => {
 async function buscarEventos() {
   const { data, error } = await supabaseClient
     .from('eventos')
-    .select('id, titulo, data, tipo, horario, author_id');
+    .select('id, titulo, data, tipo, horario, autor_nome');
 
   if (error) {
     console.error('Erro ao buscar do banco:', error);
@@ -111,15 +111,15 @@ async function buscarEventos() {
       : evento.data;
 
     return {
-      id: String(evento.id), // FullCalendar trabalha melhor com id em string
+      id: String(evento.id),
       title: evento.titulo,
       start: inicio,
       color: CORES_EVENTO[evento.tipo] || COR_PADRAO,
       extendedProps: {
         tipo: evento.tipo,
-        data: evento.data,       // guardado cru, útil pra pré-preencher o form de edição
+        data: evento.data,
         horario: evento.horario,
-        author_id: evento.author_id,
+        autor_nome: evento.autor_nome,
       },
     };
   });
@@ -145,7 +145,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // Conteúdo customizado: ícone + horário + título truncado + badge "Seu"
     eventContent: (arg) => {
-      const { tipo, horario, author_id } = arg.event.extendedProps;
+      const { tipo, horario, autor_nome } = arg.event.extendedProps;
 
       const wrapper = document.createElement('div');
       wrapper.classList.add('evento-conteudo');
@@ -167,10 +167,12 @@ document.addEventListener('DOMContentLoaded', async () => {
       spanTitulo.innerText = arg.event.title;
       wrapper.appendChild(spanTitulo);
 
-      if (author_id && author_id === usuarioAtualId) {
+      // Badge agora mostra o apelido de QUEM CRIOU (visível pra todos,
+      // não só pro próprio autor — reforça a natureza colaborativa)
+      if (autor_nome) {
         const badge = document.createElement('span');
         badge.classList.add('evento-badge-dono');
-        badge.innerText = 'Seu';
+        badge.innerText = autor_nome;
         wrapper.appendChild(badge);
       }
 
@@ -243,9 +245,11 @@ document.getElementById('form-novo-evento').addEventListener('submit', async (e)
   btnSubmit.innerText = "Salvando...";
   btnSubmit.disabled = true;
 
-  // Não precisamos enviar author_id manualmente — a coluna tem
-  // DEFAULT auth.uid(), o próprio Supabase preenche com base no
-  // usuário autenticado que está fazendo a requisição.
+  // Pega o usuário logado pra extrair o apelido (parte antes do @).
+  // Ex: "joao.silva@inf.ufpel.edu.br" -> "joao.silva"
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  const apelido = user?.email?.split('@')[0] || 'anônimo';
+
   const { error } = await supabaseClient
     .from('eventos')
     .insert([{
@@ -253,6 +257,7 @@ document.getElementById('form-novo-evento').addEventListener('submit', async (e)
       tipo: tipoSelecionado,
       data: dataDigitada,
       horario: horarioDigitado || null,
+      autor_nome: apelido,
     }]);
 
   if (error) {
@@ -273,13 +278,12 @@ const acoesDono = document.getElementById('detalhes-acoes-dono');
 
 function abrirModalDetalhes(evento) {
   eventoSelecionadoId = evento.id;
-  const { tipo, horario, author_id } = evento.extendedProps;
-  const souODono = author_id && author_id === usuarioAtualId;
+  const { tipo, horario, autor_nome } = evento.extendedProps;
 
-  // Preenche o modo visualização
   document.getElementById('detalhes-titulo').innerText = evento.title;
   document.getElementById('detalhes-tipo').innerText = tipo.charAt(0).toUpperCase() + tipo.slice(1);
   document.getElementById('detalhes-data').innerText = evento.start.toLocaleDateString('pt-BR');
+  document.getElementById('detalhes-autor').innerText = autor_nome || 'anônimo';
 
   const linhaHorario = document.getElementById('detalhes-horario-linha');
   if (horario) {
@@ -289,10 +293,8 @@ function abrirModalDetalhes(evento) {
     linhaHorario.style.display = 'none';
   }
 
-  // Botões de Editar/Excluir só aparecem pro dono do evento
-  acoesDono.style.display = souODono ? 'flex' : 'none';
+  acoesDono.style.display = usuarioAtualId ? 'flex' : 'none';
 
-  // Sempre abre no modo visualização, mesmo que já tenha editado antes
   painelVisualizacao.style.display = 'block';
   formEdicao.style.display = 'none';
 
@@ -330,6 +332,9 @@ formEdicao.addEventListener('submit', async (e) => {
   btnSalvar.innerText = "Salvando...";
   btnSalvar.disabled = true;
 
+  const { data: { user } } = await supabaseClient.auth.getUser();
+  const apelido = user?.email?.split('@')[0] || 'anônimo';
+
   const { error } = await supabaseClient
     .from('eventos')
     .update({
@@ -337,17 +342,15 @@ formEdicao.addEventListener('submit', async (e) => {
       tipo: document.getElementById('editar-tipo').value,
       data: document.getElementById('editar-data').value,
       horario: document.getElementById('editar-horario').value || null,
+      autor_nome: apelido, // sobrescreve com quem editou por último
     })
-    .eq('id', eventoSelecionadoId); // a RLS também garante que só o autor consegue
+    .eq('id', eventoSelecionadoId);
 
   if (error) {
     alert("Erro ao editar: " + error.message);
     btnSalvar.innerText = "Salvar Alterações";
     btnSalvar.disabled = false;
   } else {
-    // Recarregamos a página pra garantir que o calendário reflita
-    // exatamente o estado atual do banco. Uma otimização futura
-    // seria atualizar o evento em memória sem reload.
     window.location.reload();
   }
 });
