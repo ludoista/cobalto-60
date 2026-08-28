@@ -1,0 +1,30 @@
+/* Formulários */
+.form-grupo {
+    margin-bottom: 20px;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-grupo label {
+    font-weight: 600;
+    font-size: 14px;
+    margin-bottom: 8px;
+    color: var(--texto);
+}
+
+.form-grupo input,
+.form-grupo select {
+    padding: 12px;
+    border: 1px solid var(--borda);
+    border-radius: var(--raio);
+    font-size: 15px;
+    outline: none;
+    background-color: white;
+    transition: all 0.2s;
+}
+
+.form-grupo input:focus,
+.form-grupo select:focus {
+    border-color: var(--cobalto);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2);
+}

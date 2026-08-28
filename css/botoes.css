@@ -1,0 +1,43 @@
+/* Botões */
+.header-acoes {
+    text-align: center;
+    margin: 20px 0;
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.btn-primario {
+    background-color: var(--cobalto);
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: var(--raio);
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.btn-primario:hover {
+    background-color: var(--cobalto-escuro);
+    transform: translateY(-1px);
+}
+
+.btn-primario:active {
+    transform: translateY(1px);
+}
+
+/* Cores específicas de cada botão de ação */
+#btn-login { background-color: var(--texto); }
+#btn-login:hover { background-color: #0f172a; }
+#btn-logout { background-color: var(--perigo); }
+#btn-logout:hover { background-color: #b91c1c; }
+#acao-cadastrar { background-color: var(--sucesso); }
+#acao-cadastrar:hover { background-color: #059669; }
+
+.btn-perigo { background-color: var(--perigo); }
+.btn-perigo:hover { background-color: #b91c1c; }
+
+.btn-secundario { background-color: #94a3b8; }
+.btn-secundario:hover { background-color: #64748b; }

@@ -1,0 +1,70 @@
+/* Eventos dentro do calendário
+   Hierarquia: ícone (fixo) > título (domina o espaço) > horário (discreto) > badge */
+.fc-event {
+    cursor: pointer;
+    border: none !important;
+    padding: 3px 6px;
+    border-radius: 4px;
+}
+
+.evento-conteudo {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    overflow: hidden;
+    width: 100%;
+}
+
+.evento-icone {
+    flex-shrink: 0;
+    font-size: 11px;
+    opacity: 0.9;
+}
+
+.evento-titulo {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-weight: 600;
+    font-size: 13px;
+}
+
+.evento-horario {
+    flex-shrink: 0;
+    font-size: 11px;
+    font-weight: 400;
+    opacity: 0.85;
+}
+
+.evento-badge-dono {
+    flex-shrink: 0;
+    font-size: 9px;
+    background: rgba(255, 255, 255, 0.35);
+    padding: 1px 5px;
+    border-radius: 4px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.fc-daygrid-day:hover {
+    background-color: #f1f5f9;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+/* Year view (multiMonthYear) — múltiplas colunas */
+.fc-multimonth-title {
+    font-weight: 700;
+    color: var(--cobalto);
+    font-size: 16px;
+}
+
+.fc-multimonth {
+    gap: 24px 40px;
+}
+
+.fc-multimonth .evento-titulo {
+    font-size: 12px;
+}

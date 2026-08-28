@@ -11,48 +11,51 @@
 
   <!-- ==========================================================
        CABEÇALHO: título do projeto + ações de conta.
-       Fica fixo no topo da página, separado do conteúdo.
        ========================================================== -->
   <header class="topo">
     <h1>Cobalto-60</h1>
     <div class="header-acoes">
       <button id="btn-login" class="btn-primario">Fazer Login</button>
+      <button id="btn-gerenciar-materias" class="btn-primario btn-secundario" style="display: none;">📚 Matérias</button>
       <button id="btn-novo-evento" class="btn-primario" style="display: none;">+ Novo Evento</button>
       <button id="btn-logout" class="btn-primario" style="display: none;">Sair</button>
     </div>
   </header>
 
   <!-- ==========================================================
-       CONTEÚDO PRINCIPAL: tudo relacionado ao calendário em si
-       fica dentro de um container centralizado com espaçamento
-       consistente (ver .container no CSS).
+       CONTEÚDO PRINCIPAL
        ========================================================== -->
   <main class="container">
 
-    <!-- FILTROS: checkboxes multi-seleção (não excludentes).
-         Cada checkbox tem data-tipo, lido pelo JS. -->
-         <section class="filtros-container">
-           <input type="text" id="busca-evento" class="input-busca" placeholder="🔎 Buscar por título...">
+    <section class="filtros-container">
+      <input type="text" id="busca-evento" class="input-busca" placeholder="🔎 Buscar por título...">
 
-           <label class="filtro-pill">
-             <input type="checkbox" class="chk-filtro" data-tipo="prova" checked>
-             <span class="dot" style="background-color:#ef4444"></span> Provas
-           </label>
-           <label class="filtro-pill">
-             <input type="checkbox" class="chk-filtro" data-tipo="trabalho" checked>
-             <span class="dot" style="background-color:#2563eb"></span> Trabalhos
-           </label>
-           <label class="filtro-pill">
-             <input type="checkbox" class="chk-filtro" data-tipo="feriado" checked>
-             <span class="dot" style="background-color:#10b981"></span> Feriados
-           </label>
-           <label class="filtro-pill">
-             <input type="checkbox" class="chk-filtro" data-tipo="evento" checked>
-             <span class="dot" style="background-color:#8b5cf6"></span> Eventos
-           </label>
-         </section>
+      <label class="filtro-pill">
+        <input type="checkbox" class="chk-filtro" data-tipo="prova" checked>
+        <span class="dot" style="background-color:#ef4444"></span> Provas
+      </label>
+      <label class="filtro-pill">
+        <input type="checkbox" class="chk-filtro" data-tipo="trabalho" checked>
+        <span class="dot" style="background-color:#2563eb"></span> Trabalhos
+      </label>
+      <label class="filtro-pill">
+        <input type="checkbox" class="chk-filtro" data-tipo="sem_aula" checked>
+        <span class="dot" style="background-color:#f59e0b"></span> Sem Aula
+      </label>
+      <label class="filtro-pill">
+        <input type="checkbox" class="chk-filtro" data-tipo="evento" checked>
+        <span class="dot" style="background-color:#8b5cf6"></span> Eventos
+      </label>
 
-         <div id="calendar"></div>
+      <!-- Filtro por matéria — as pills são geradas via JS (filtros.js),
+           porque a lista de matérias vem do banco. -->
+      <div class="filtro-materias-bloco">
+        <span class="filtro-materias-titulo">Matérias:</span>
+        <div id="filtro-materias" class="filtro-materias-lista"></div>
+      </div>
+    </section>
+
+    <div id="calendar"></div>
 
   </main>
 
@@ -72,7 +75,7 @@
           <select id="evento-tipo" required>
             <option value="prova">Prova</option>
             <option value="trabalho">Trabalho</option>
-            <option value="feriado">Feriado</option>
+            <option value="sem_aula">Sem Aula</option>
             <option value="evento">Evento</option>
           </select>
         </div>
@@ -90,6 +93,11 @@
         <div class="form-grupo">
           <label for="evento-lugar">Local (Opcional)</label>
           <input type="text" id="evento-lugar" placeholder="Ex: Sala 402 - Campus Porto">
+        </div>
+
+        <div class="form-grupo">
+          <label>Matéria(s) <span style="font-weight: 400; color: #94a3b8;">(opcional — nenhuma ou várias)</span></label>
+          <div id="evento-materias-lista" class="materias-checklist"></div>
         </div>
 
         <button type="submit" class="btn-primario" style="width: 100%;">Salvar no Calendário</button>
@@ -117,67 +125,84 @@
     </div>
   </div>
 
-  <!-- ==========================================================
-       Modal: Detalhes do Evento (NOVO)
-       Aberto ao clicar num evento no calendário. Somente leitura
-       por enquanto — edição/exclusão fica pra uma próxima etapa.
-       ========================================================== -->
-       <div id="modal-detalhes" class="modal">
-         <div class="modal-conteudo">
-           <span class="fechar-modal" id="btn-fechar-detalhes">&times;</span>
+  <!-- Modal: Detalhes do Evento -->
+  <div id="modal-detalhes" class="modal">
+    <div class="modal-conteudo">
+      <span class="fechar-modal" id="btn-fechar-detalhes">&times;</span>
 
-           <!-- MODO VISUALIZAÇÃO -->
-           <div id="detalhes-visualizacao">
-             <h2 id="detalhes-titulo"></h2>
-             <p><strong>Tipo:</strong> <span id="detalhes-tipo"></span></p>
-             <p><strong>Data:</strong> <span id="detalhes-data"></span></p>
-             <p id="detalhes-horario-linha"><strong>Horário:</strong> <span id="detalhes-horario"></span></p>
-             <p id="detalhes-lugar-linha" style="display: none;"><strong>Local:</strong> <span id="detalhes-lugar"></span></p>
-             <p><strong>Por:</strong> <span id="detalhes-autor"></span></p>
+      <!-- MODO VISUALIZAÇÃO -->
+      <div id="detalhes-visualizacao">
+        <h2 id="detalhes-titulo"></h2>
+        <p><strong>Tipo:</strong> <span id="detalhes-tipo"></span></p>
+        <p><strong>Data:</strong> <span id="detalhes-data"></span></p>
+        <p id="detalhes-horario-linha"><strong>Horário:</strong> <span id="detalhes-horario"></span></p>
+        <p id="detalhes-lugar-linha" style="display: none;"><strong>Local:</strong> <span id="detalhes-lugar"></span></p>
+        <p id="detalhes-materias-linha" style="display: none;"><strong>Matéria(s):</strong> <span id="detalhes-materias"></span></p>
+        <p><strong>Por:</strong> <span id="detalhes-autor"></span></p>
 
-             <div id="detalhes-acoes-dono" class="acoes-dono" style="display:none;">
-               <button type="button" id="btn-editar-evento" class="btn-primario">Editar</button>
-               <button type="button" id="btn-excluir-evento" class="btn-primario btn-perigo">Excluir</button>
-             </div>
-           </div>
+        <div id="detalhes-acoes-dono" class="acoes-dono" style="display:none;">
+          <button type="button" id="btn-editar-evento" class="btn-primario">Editar</button>
+          <button type="button" id="btn-excluir-evento" class="btn-primario btn-perigo">Excluir</button>
+        </div>
+      </div>
 
-           <!-- MODO EDIÇÃO -->
-           <form id="form-editar-evento" style="display:none;">
-             <div class="form-grupo">
-               <label for="editar-titulo">Título</label>
-               <input type="text" id="editar-titulo" required>
-             </div>
-             <div class="form-grupo">
-               <label for="editar-tipo">Tipo</label>
-               <select id="editar-tipo" required>
-                 <option value="prova">Prova</option>
-                 <option value="trabalho">Trabalho</option>
-                 <option value="feriado">Feriado</option>
-                 <option value="evento">Evento</option>
-               </select>
-             </div>
-             <div class="form-grupo">
-               <label for="editar-data">Data</label>
-               <input type="date" id="editar-data" required>
-             </div>
-             <div class="form-grupo">
-               <label for="editar-horario">Horário (opcional)</label>
-               <input type="time" id="editar-horario">
-             </div>
-             <div class="form-grupo">
-               <label for="editar-lugar">Local (Opcional)</label>
-               <input type="text" id="editar-lugar"> <!-- Mudei o ID aqui! -->
-             </div>
-             <div class="acoes-edicao">
-               <button type="submit" class="btn-primario">Salvar Alterações</button>
-               <button type="button" id="btn-cancelar-edicao" class="btn-primario btn-secundario">Cancelar</button>
-             </div>
-           </form>
-         </div>
-       </div>
+      <!-- MODO EDIÇÃO -->
+      <form id="form-editar-evento" style="display:none;">
+        <div class="form-grupo">
+          <label for="editar-titulo">Título</label>
+          <input type="text" id="editar-titulo" required>
+        </div>
+        <div class="form-grupo">
+          <label for="editar-tipo">Tipo</label>
+          <select id="editar-tipo" required>
+            <option value="prova">Prova</option>
+            <option value="trabalho">Trabalho</option>
+            <option value="sem_aula">Sem Aula</option>
+            <option value="evento">Evento</option>
+          </select>
+        </div>
+        <div class="form-grupo">
+          <label for="editar-data">Data</label>
+          <input type="date" id="editar-data" required>
+        </div>
+        <div class="form-grupo">
+          <label for="editar-horario">Horário (opcional)</label>
+          <input type="time" id="editar-horario">
+        </div>
+        <div class="form-grupo">
+          <label for="editar-lugar">Local (Opcional)</label>
+          <input type="text" id="editar-lugar">
+        </div>
+        <div class="form-grupo">
+          <label>Matéria(s) <span style="font-weight: 400; color: #94a3b8;">(opcional — nenhuma ou várias)</span></label>
+          <div id="editar-materias-lista" class="materias-checklist"></div>
+        </div>
+        <div class="acoes-edicao">
+          <button type="submit" class="btn-primario">Salvar Alterações</button>
+          <button type="button" id="btn-cancelar-edicao" class="btn-primario btn-secundario">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Modal: Gerenciar Matérias -->
+  <div id="modal-materias" class="modal">
+    <div class="modal-conteudo">
+      <span class="fechar-modal" id="btn-fechar-materias">&times;</span>
+      <h2>Gerenciar Matérias</h2>
+
+      <form id="form-nova-materia" class="form-materia-nova">
+        <input type="text" id="materia-nome" placeholder="Nome da matéria (ex: Cálculo 2)" required>
+        <input type="color" id="materia-cor" value="#2563eb" title="Cor da matéria">
+        <button type="submit" class="btn-primario">Adicionar</button>
+      </form>
+
+      <ul id="lista-materias" class="lista-materias"></ul>
+    </div>
+  </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src='https://cdn.jsdelivr.net/npm/fullcalendar@6.1.15/index.global.min.js'></script>
-  <script src="app.js"></script>
+  <script type="module" src="js/main.js"></script>
 </body>
 </html>

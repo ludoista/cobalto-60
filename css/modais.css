@@ -1,0 +1,49 @@
+/* Modal (janela sobreposta) */
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0; top: 0;
+    width: 100%; height: 100%;
+    background-color: rgba(15, 23, 42, 0.6);
+    backdrop-filter: blur(4px);
+    animation: fadeIn 0.2s ease-out;
+}
+
+.modal-conteudo {
+    background-color: var(--superficie);
+    margin: 8vh auto;
+    padding: 30px;
+    border-radius: var(--raio);
+    width: 90%;
+    max-width: 420px;
+    box-shadow: var(--sombra);
+    position: relative;
+    animation: slideUp 0.3s ease-out;
+}
+
+.modal-conteudo h2 {
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+    color: var(--texto);
+}
+
+.fechar-modal {
+    position: absolute;
+    right: 20px; top: 20px;
+    font-size: 28px;
+    line-height: 1;
+    font-weight: bold;
+    cursor: pointer;
+    color: #94a3b8;
+    transition: color 0.2s;
+}
+
+.fechar-modal:hover { color: var(--perigo); }
+
+/* Ações do modal de detalhes (editar/excluir) */
+.acoes-dono, .acoes-edicao {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+}

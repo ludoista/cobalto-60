@@ -1,0 +1,13 @@
+/* Variáveis de cor e tema — fácil de editar em um único lugar */
+:root {
+    --cobalto: #2563eb;
+    --cobalto-escuro: #1d4ed8;
+    --sucesso: #10b981;
+    --perigo: #ef4444;
+    --fundo: #f8fafc;
+    --superficie: #ffffff;
+    --texto: #1e293b;
+    --borda: #e2e8f0;
+    --raio: 8px;
+    --sombra: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1);
+}
