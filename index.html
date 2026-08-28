@@ -87,6 +87,11 @@
           <input type="time" id="evento-horario">
         </div>
 
+        <div class="form-grupo">
+          <label for="evento-lugar">Local (Opcional)</label>
+          <input type="text" id="evento-lugar" placeholder="Ex: Sala 402 - Campus Porto">
+        </div>
+
         <button type="submit" class="btn-primario" style="width: 100%;">Salvar no Calendário</button>
       </form>
     </div>
@@ -127,6 +132,7 @@
              <p><strong>Tipo:</strong> <span id="detalhes-tipo"></span></p>
              <p><strong>Data:</strong> <span id="detalhes-data"></span></p>
              <p id="detalhes-horario-linha"><strong>Horário:</strong> <span id="detalhes-horario"></span></p>
+             <p id="detalhes-lugar-linha" style="display: none;"><strong>Local:</strong> <span id="detalhes-lugar"></span></p>
              <p><strong>Por:</strong> <span id="detalhes-autor"></span></p>
 
              <div id="detalhes-acoes-dono" class="acoes-dono" style="display:none;">
@@ -157,6 +163,10 @@
              <div class="form-grupo">
                <label for="editar-horario">Horário (opcional)</label>
                <input type="time" id="editar-horario">
+             </div>
+             <div class="form-grupo">
+               <label for="editar-lugar">Local (Opcional)</label>
+               <input type="text" id="editar-lugar"> <!-- Mudei o ID aqui! -->
              </div>
              <div class="acoes-edicao">
                <button type="submit" class="btn-primario">Salvar Alterações</button>
